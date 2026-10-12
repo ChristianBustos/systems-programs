@@ -1,41 +1,55 @@
 # Bresenham BMP Line Renderer
 
-This program implements Bresenham’s line-drawing algorithm to rasterize a line
-directly into a BMP image file using low-level binary file output in C++.
+A C++ program that draws a line between two points using Bresenham's line algorithm, with the core algorithm written in **x86 inline assembly**. The result is rasterized into a 256x256 8-bit BMP file using hand-built binary file output.
 
-The program prompts the user for two coordinate pairs, computes the line using
-integer-only arithmetic, and writes the resulting image to disk.
+Written for CS230 (Systems Programming), Spring 2025.
+
+## What It Does
+
+1. Prompts for two coordinate pairs in the range 0 to 255
+2. Validates all four values and reports each one that is out of range
+3. Builds a 256x256 grayscale gradient background and a custom color table (index 0 is aqua, the rest are grays)
+4. Runs Bresenham's algorithm in inline assembly to step from the first point to the second, plotting each pixel with bounds checks
+5. Thickens the line into a plus shape (5 pixels per step) so it is visible at 256x256
+6. Writes the BMP headers, color table, and pixel data to `foo.bmp` and opens it in MS Paint
 
 ## Concepts Demonstrated
 
-- Bresenham line-drawing algorithm
-- Integer-based rasterization
-- Binary file I/O
-- BMP file format construction
-- Low-level graphics algorithms
+- Bresenham's line-drawing algorithm (integer-only, incremental error term)
+- x86 inline assembly (MSVC `__asm`): register use, conditional jumps, and direct memory addressing
+- Manual pixel address calculation in a 2D byte array
+- BMP file format construction: `BITMAPFILEHEADER`, `BITMAPINFOHEADER`, and an 8-bit palette
+- Binary file I/O and input validation
+
+## Input Format
+
+Coordinates are entered in **row, column order**:
+
+```
+y0 x0 y1 x1
+```
+
+For example, `10 20 200 240` draws a line from row 10, column 20 to row 200, column 240. Because BMP files are stored bottom-up, row 0 is the bottom edge of the image.
 
 ## Build and Run
 
-This program was developed and tested using Microsoft Visual Studio.
+**Requirements:** Windows and Microsoft Visual Studio. This program uses `windows.h` and launches MS Paint, so it will not compile on macOS or Linux.
 
-### Build
-- Create a new C++ console project
-- Add `bresenham_bmp.cpp` to the project
-- Build in Debug or Release mode
+**Important:** Build with the platform set to **x86 (Win32)**. MSVC does not support inline `__asm` blocks in x64 builds.
 
-### Run
-When executed, the program:
-1. Opens a console window
-2. Prompts the user for two sets of (x, y) coordinates
-3. Generates a BMP image containing the rasterized line
-4. Writes the BMP file to the program’s working directory
+1. Create a new C++ Console App project in Visual Studio
+2. Add `bresenham_bmp.cpp` to the project
+3. Set the platform dropdown to **x86**
+4. Build and run (Debug or Release)
+
+When run, the program asks for the four coordinates, writes `foo.bmp` to the working directory, and opens it in MS Paint.
 
 ## Output
 
-- A BMP image file is generated in the project directory
-- The image can be opened using standard image viewers (e.g., MS Paint)
+A 256x256 BMP with a left-to-right black-to-white gradient background and the requested line drawn in aqua.
 
 ## Notes
 
-This implementation avoids floating-point arithmetic and uses integer
-incremental error calculations, consistent with the original Bresenham algorithm.
+- No floating-point math is used. The line is traced with integer error accumulation, consistent with the original Bresenham algorithm.
+- Pixel writes are bounds-checked before any memory is touched, including the extra pixels used to thicken the line.
+- The plotting loop and the per-step error update are separate assembly blocks, with the loop exit condition handled in C++.
