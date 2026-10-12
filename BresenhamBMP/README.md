@@ -2,8 +2,6 @@
 
 A C++ program that draws a line between two points using Bresenham's line algorithm, with the core algorithm written in **x86 inline assembly**. The result is rasterized into a 256x256 8-bit BMP file using hand-built binary file output.
 
-Written for CS230 (Systems Programming), Spring 2025.
-
 ## What It Does
 
 1. Prompts for two coordinate pairs in the range 0 to 255
